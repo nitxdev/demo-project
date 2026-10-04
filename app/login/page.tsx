@@ -1,11 +1,8 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -31,27 +28,34 @@ export default function LoginPage() {
 
       const data = await response.json();
 
+      console.log("LOGIN RESPONSE:", data);
+
       if (!response.ok) {
         setMessage(data.message || "Login failed");
+        setLoading(false);
         return;
       }
 
-      // Save logged-in user
+      // Save user
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      console.log("LOGIN USER:", data.user);
+      // Check that user was actually saved
+      console.log(
+        "SAVED USER:",
+        localStorage.getItem("user")
+      );
 
       setMessage("Login successful!");
 
+      // Direct browser redirect
       if (data.user.role === "admin") {
-        router.push("/admin");
+        window.location.href = "/admin";
       } else {
-        router.push("/dashboard");
+        window.location.href = "/dashboard";
       }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("LOGIN ERROR:", error);
       setMessage("Something went wrong");
-    } finally {
       setLoading(false);
     }
   }
@@ -68,14 +72,17 @@ export default function LoginPage() {
           Login to Opportunity Hub
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4"
+        >
 
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-3 text-white outline-none"
+            className="w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-3 text-white placeholder:text-slate-400 outline-none focus:border-blue-500"
             required
           />
 
@@ -84,7 +91,7 @@ export default function LoginPage() {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-3 text-white outline-none"
+            className="w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-3 text-white placeholder:text-slate-400 outline-none focus:border-blue-500"
             required
           />
 
