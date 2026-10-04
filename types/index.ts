@@ -8,6 +8,7 @@
   interests: string[];
   role: "student" | "admin";
 }
+
 export interface Opportunity {
   _id?: string;
   title: string;

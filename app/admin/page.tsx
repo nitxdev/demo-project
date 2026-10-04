@@ -1,12 +1,42 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import OpportunitiesForm from "@/components/OpportunitiesForm";
 import type { Opportunity } from "@/types";
 
 export default function AdminPage() {
+  const router = useRouter();
+
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
+
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminMessage, setAdminMessage] = useState("");
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+
+    if (!user) {
+      router.replace("/login");
+      return;
+    }
+
+    try {
+      const userData = JSON.parse(user);
+
+      if (userData.role !== "admin") {
+        router.replace("/dashboard");
+        return;
+      }
+
+      setAuthorized(true);
+    } catch (error) {
+      console.error(error);
+      router.replace("/login");
+    }
+  }, [router]);
 
   async function fetchOpportunities() {
     try {
@@ -24,8 +54,10 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
-    fetchOpportunities();
-  }, []);
+    if (authorized) {
+      fetchOpportunities();
+    }
+  }, [authorized]);
 
   async function handleDelete(id: string) {
     const confirmed = confirm(
@@ -51,6 +83,41 @@ export default function AdminPage() {
     }
   }
 
+  async function makeAdmin() {
+    setAdminMessage("");
+
+    try {
+      const response = await fetch("/api/admin/make-admin", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: adminEmail,
+        }),
+      });
+
+      const data = await response.json();
+
+      setAdminMessage(data.message);
+
+      if (data.success) {
+        setAdminEmail("");
+      }
+    } catch (error) {
+      console.error(error);
+      setAdminMessage("Something went wrong");
+    }
+  }
+
+  if (!authorized) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-900">
+        <p className="text-white">Checking access...</p>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-slate-900 p-8">
       <div className="mx-auto max-w-6xl">
@@ -61,6 +128,36 @@ export default function AdminPage() {
         <p className="mb-8 text-gray-400">
           Manage student opportunities.
         </p>
+
+        {/* Assign Admin */}
+        <div className="mb-8 rounded-xl bg-slate-800 p-6">
+          <h2 className="mb-4 text-xl font-bold text-white">
+            Assign Admin
+          </h2>
+
+          <div className="flex gap-3">
+            <input
+              type="email"
+              placeholder="Enter user email"
+              value={adminEmail}
+              onChange={(e) => setAdminEmail(e.target.value)}
+              className="flex-1 rounded-lg border px-4 py-3"
+            />
+
+            <button
+              onClick={makeAdmin}
+              className="rounded-lg bg-blue-600 px-5 py-3 font-medium text-white hover:bg-blue-700"
+            >
+              Make Admin
+            </button>
+          </div>
+
+          {adminMessage && (
+            <p className="mt-3 text-sm text-white">
+              {adminMessage}
+            </p>
+          )}
+        </div>
 
         <OpportunitiesForm />
 
