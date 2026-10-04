@@ -1,18 +1,21 @@
+import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 
 export async function GET() {
   try {
     await connectDB();
 
-    return Response.json({
+    return NextResponse.json({
       success: true,
       message: "MongoDB connected",
     });
   } catch (error) {
-    return Response.json(
+    console.error("MongoDB ERROR:", error);
+
+    return NextResponse.json(
       {
         success: false,
-        message: "MongoDB connection failed",
+        message: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     );
