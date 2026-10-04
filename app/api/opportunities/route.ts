@@ -28,9 +28,33 @@ export async function GET() {
   }
 }
 
-// CREATE opportunity
+// CREATE opportunity - Admin only
 export async function POST(request: NextRequest) {
   try {
+    const userHeader = request.headers.get("x-user");
+
+    if (!userHeader) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Unauthorized",
+        },
+        { status: 401 }
+      );
+    }
+
+    const user = JSON.parse(userHeader);
+
+    if (user.role !== "admin") {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Admin access required",
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
 
     const {

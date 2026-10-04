@@ -41,7 +41,11 @@ export default function LoginPage() {
       setMessage("Login successful!");
 
       setTimeout(() => {
-        router.push("/dashboard");
+        if (data.user.role === "admin") {
+          router.push("/admin");
+        } else {
+          router.push("/dashboard");
+        }
       }, 500);
     } catch (error) {
       console.error(error);

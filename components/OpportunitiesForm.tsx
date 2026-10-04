@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 
-export default function OpportunityForm() {
+export default function OpportunitiesForm() {
   const [title, setTitle] = useState("");
   const [organization, setOrganization] = useState("");
   const [category, setCategory] = useState("Internship");
@@ -16,14 +16,16 @@ export default function OpportunityForm() {
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-
     setMessage("");
 
     try {
+      const user = localStorage.getItem("user");
+
       const response = await fetch("/api/opportunities", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-user": user || "",
         },
         body: JSON.stringify({
           title,
@@ -74,14 +76,14 @@ export default function OpportunityForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 rounded-xl bg-slate-800 p-6 shadow"
+      className="space-y-4 rounded-xl bg-white p-6 shadow"
     >
       <input
         type="text"
         placeholder="Opportunity title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-3 text-white placeholder:text-slate-400"
+        className="w-full rounded-lg border px-4 py-3"
         required
       />
 
@@ -90,14 +92,14 @@ export default function OpportunityForm() {
         placeholder="Organization"
         value={organization}
         onChange={(e) => setOrganization(e.target.value)}
-       className="w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-3 text-white placeholder:text-slate-400"
+        className="w-full rounded-lg border px-4 py-3"
         required
       />
 
       <select
         value={category}
         onChange={(e) => setCategory(e.target.value)}
-       className="w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-3 text-white"
+        className="w-full rounded-lg border px-4 py-3"
       >
         <option>Internship</option>
         <option>Hackathon</option>
@@ -112,7 +114,7 @@ export default function OpportunityForm() {
         placeholder="Description"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-       className="w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-3 text-white"
+        className="w-full rounded-lg border px-4 py-3"
         rows={4}
         required
       />
@@ -122,15 +124,15 @@ export default function OpportunityForm() {
         placeholder="Branches (e.g. CSE, IT, ECE)"
         value={branch}
         onChange={(e) => setBranch(e.target.value)}
-      className="w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-3 text-white"
+        className="w-full rounded-lg border px-4 py-3"
       />
 
       <input
         type="text"
-        placeholder="Years (e.g. 2, 3, 4)"
+        placeholder="Years (e.g. 1, 2, 3, 4)"
         value={year}
         onChange={(e) => setYear(e.target.value)}
-       className="w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-3 text-white"
+        className="w-full rounded-lg border px-4 py-3"
       />
 
       <input
@@ -138,14 +140,14 @@ export default function OpportunityForm() {
         placeholder="Skills (e.g. React, Java, Python)"
         value={skills}
         onChange={(e) => setSkills(e.target.value)}
-       className="w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-3 text-white"
+        className="w-full rounded-lg border px-4 py-3"
       />
 
       <input
         type="date"
         value={deadline}
         onChange={(e) => setDeadline(e.target.value)}
-       className="w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-3 text-white"
+        className="w-full rounded-lg border px-4 py-3"
         required
       />
 
@@ -154,7 +156,7 @@ export default function OpportunityForm() {
         placeholder="Application link"
         value={applyLink}
         onChange={(e) => setApplyLink(e.target.value)}
-      className="w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-3 text-white"
+        className="w-full rounded-lg border px-4 py-3"
         required
       />
 
@@ -166,7 +168,7 @@ export default function OpportunityForm() {
       </button>
 
       {message && (
-        <p className="text-center text-sm">
+        <p className="text-center text-sm text-gray-700">
           {message}
         </p>
       )}

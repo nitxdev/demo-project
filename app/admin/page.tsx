@@ -67,8 +67,13 @@ export default function AdminPage() {
     if (!confirmed) return;
 
     try {
+      const user = localStorage.getItem("user");
+
       const response = await fetch(`/api/opportunities/${id}`, {
         method: "DELETE",
+        headers: {
+          "x-user": user || "",
+        },
       });
 
       const data = await response.json();
@@ -77,6 +82,8 @@ export default function AdminPage() {
         setOpportunities((current) =>
           current.filter((opportunity) => opportunity._id !== id)
         );
+      } else {
+        alert(data.message);
       }
     } catch (error) {
       console.error(error);
@@ -87,10 +94,13 @@ export default function AdminPage() {
     setAdminMessage("");
 
     try {
+      const user = localStorage.getItem("user");
+
       const response = await fetch("/api/admin/make-admin", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          "x-user": user || "",
         },
         body: JSON.stringify({
           email: adminEmail,
@@ -129,7 +139,6 @@ export default function AdminPage() {
           Manage student opportunities.
         </p>
 
-        {/* Assign Admin */}
         <div className="mb-8 rounded-xl bg-slate-800 p-6">
           <h2 className="mb-4 text-xl font-bold text-white">
             Assign Admin

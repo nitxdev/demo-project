@@ -41,12 +41,36 @@ export async function GET(
   }
 }
 
-// UPDATE opportunity
+// UPDATE - Admin only
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userHeader = request.headers.get("x-user");
+
+    if (!userHeader) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Unauthorized",
+        },
+        { status: 401 }
+      );
+    }
+
+    const user = JSON.parse(userHeader);
+
+    if (user.role !== "admin") {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Admin access required",
+        },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
     const body = await request.json();
 
@@ -89,12 +113,36 @@ export async function PUT(
   }
 }
 
-// DELETE opportunity
+// DELETE - Admin only
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const userHeader = request.headers.get("x-user");
+
+    if (!userHeader) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Unauthorized",
+        },
+        { status: 401 }
+      );
+    }
+
+    const user = JSON.parse(userHeader);
+
+    if (user.role !== "admin") {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Admin access required",
+        },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
 
     await connectDB();
