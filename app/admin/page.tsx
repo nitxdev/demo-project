@@ -16,47 +16,48 @@ export default function AdminPage() {
   const [adminMessage, setAdminMessage] = useState("");
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
+    const storedUser = localStorage.getItem("user");
 
-    if (!user) {
+    if (!storedUser) {
       router.replace("/login");
       return;
     }
 
     try {
-      const userData = JSON.parse(user);
+      const user = JSON.parse(storedUser);
 
-      if (userData.role !== "admin") {
+      if (user.role !== "admin") {
         router.replace("/dashboard");
         return;
       }
 
       setAuthorized(true);
     } catch (error) {
-      console.error(error);
+      console.error("Invalid user data:", error);
+      localStorage.removeItem("user");
       router.replace("/login");
     }
   }, [router]);
 
-  async function fetchOpportunities() {
-    try {
-      const response = await fetch("/api/opportunities");
-      const data = await response.json();
-
-      if (data.success) {
-        setOpportunities(data.opportunities);
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    if (authorized) {
-      fetchOpportunities();
+    if (!authorized) return;
+
+    async function fetchOpportunities() {
+      try {
+        const response = await fetch("/api/opportunities");
+        const data = await response.json();
+
+        if (data.success) {
+          setOpportunities(data.opportunities);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
     }
+
+    fetchOpportunities();
   }, [authorized]);
 
   async function handleDelete(id: string) {
@@ -83,15 +84,19 @@ export default function AdminPage() {
           current.filter((opportunity) => opportunity._id !== id)
         );
       } else {
-        alert(data.message);
+        alert(data.message || "Failed to delete opportunity");
       }
     } catch (error) {
       console.error(error);
+      alert("Something went wrong");
     }
   }
 
   async function makeAdmin() {
-    setAdminMessage("");
+    if (!adminEmail.trim()) {
+      setAdminMessage("Please enter an email");
+      return;
+    }
 
     try {
       const user = localStorage.getItem("user");
@@ -131,6 +136,7 @@ export default function AdminPage() {
   return (
     <main className="min-h-screen bg-slate-900 p-8">
       <div className="mx-auto max-w-6xl">
+
         <h1 className="mb-2 text-3xl font-bold text-white">
           Admin Panel
         </h1>
@@ -139,6 +145,7 @@ export default function AdminPage() {
           Manage student opportunities.
         </p>
 
+        {/* Assign Admin */}
         <div className="mb-8 rounded-xl bg-slate-800 p-6">
           <h2 className="mb-4 text-xl font-bold text-white">
             Assign Admin
@@ -147,7 +154,7 @@ export default function AdminPage() {
           <div className="flex gap-3">
             <input
               type="email"
-              placeholder="Enter user email"
+              placeholder="Enter registered user email"
               value={adminEmail}
               onChange={(e) => setAdminEmail(e.target.value)}
               className="flex-1 rounded-lg border px-4 py-3"
@@ -168,9 +175,12 @@ export default function AdminPage() {
           )}
         </div>
 
+        {/* Add Opportunity */}
         <OpportunitiesForm />
 
+        {/* Existing Opportunities */}
         <section className="mt-10">
+
           <h2 className="mb-5 text-2xl font-bold text-white">
             Existing Opportunities
           </h2>
@@ -185,6 +195,7 @@ export default function AdminPage() {
             </p>
           ) : (
             <div className="space-y-4">
+
               {opportunities.map((opportunity) => (
                 <div
                   key={opportunity._id}
@@ -202,19 +213,22 @@ export default function AdminPage() {
                   </div>
 
                   <button
-                    onClick={() =>
-                      opportunity._id &&
-                      handleDelete(opportunity._id)
-                    }
+                    onClick={() => {
+                      if (opportunity._id) {
+                        handleDelete(opportunity._id);
+                      }
+                    }}
                     className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
                   >
                     Delete
                   </button>
                 </div>
               ))}
+
             </div>
           )}
         </section>
+
       </div>
     </main>
   );
